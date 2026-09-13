@@ -30,12 +30,15 @@ impl<R: Read, W: Write> Read for TeeReader<'_, R, W> {
 }
 
 
+/// An adapter for readers whose inputs
+/// are written to multiple "tee"'d writers.
 pub struct MultiTee<'a> {
     reader: &'a mut dyn Read,
     writers: Vec<&'a mut dyn Write>,
 }
 
 impl<'a> MultiTee<'a> {
+    /// Creates a new [`MultiTee`] instance that reads from the given reader and writes to the provided writers.
     pub fn new(reader: &'a mut dyn Read, writers: Vec<&'a mut dyn Write>) -> Self {
         Self { reader, writers }
     }
