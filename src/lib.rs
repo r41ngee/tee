@@ -30,22 +30,18 @@ impl<R: Read, W: Write> Read for TeeReader<'_, R, W> {
 }
 
 
-pub struct MultiTee {
-    reader: Box<dyn Read>,
-    writers: Vec<Box<dyn Write>>,
+pub struct MultiTee<'a> {
+    reader: &'a mut dyn Read,
+    writers: Vec<&'a mut dyn Write>,
 }
 
-impl MultiTee {
-    pub fn new(reader: impl Into<Box<dyn Read>>, writers: Vec<impl Into<Box<dyn Write>>>) -> Self {
-        Self { reader: reader.into(), writers: writers.into_iter().map(|w| w.into()).collect() }
-    }
-
-    pub fn into_inner(self) -> (Box<dyn Read>, Vec<Box<dyn Write>>) {
-        (self.reader, self.writers)
+impl<'a> MultiTee<'a> {
+    pub fn new(reader: &'a mut dyn Read, writers: Vec<&'a mut dyn Write>) -> Self {
+        Self { reader, writers }
     }
 }
 
-impl Read for MultiTee {
+impl Read for MultiTee<'_> {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let n = self.reader.read(buf)?;
         for w in self.writers.iter_mut() {
