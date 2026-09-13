@@ -67,4 +67,18 @@ mod tests {
         }
         assert_eq!(teeout, stdout);
     }
+
+    #[test]
+    fn multi_tee() {
+        let mut reader = "It's over 9000!".as_bytes();
+        let mut teeout1 = Vec::new();
+        let mut teeout2 = Vec::new();
+        let mut stdout = Vec::new();
+        {
+            let mut tee = MultiTee::new(&mut reader, vec![&mut teeout1, &mut teeout2]);
+            let _ = tee.read_to_end(&mut stdout);
+        }
+        assert_eq!(teeout1, teeout2);
+        assert_eq!(teeout2, stdout);
+    }
 }
