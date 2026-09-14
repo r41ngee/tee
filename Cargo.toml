@@ -1,7 +1,10 @@
 [package]
 name = "tee2"
 version = "0.2.0"
+
 rust-version = "1.31.1"
+edition = "2018"
+
 authors = ["softprops <d.tangren@gmail.com>", "r41ngee <r41ngeee@gmail.com>"]
 description = "An adapter for readers which delegate reads to a writer"
 repository = "https://github.com/r41ngee/tee"
