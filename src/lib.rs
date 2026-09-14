@@ -1,3 +1,17 @@
+//! An adapter for readers which delegate reads to a writer
+//! ```rust
+//! # use std::io::{Read, Write};
+//! # use tee2::TeeReader;
+//! #
+//! let mut reader = "Hello, World!".as_bytes();
+//! let mut writer = Vec::new();
+//! let mut stdout = Vec::new();
+//! 
+//! let mut tee = TeeReader::new(&mut reader, &mut writer);
+//! tee.read_to_end(&mut stdout).unwrap();
+//! assert_eq!(writer, stdout);
+//! ```
+
 use std::io::{Read, Result, Write};
 
 /// An adapter for readers whose inputs
