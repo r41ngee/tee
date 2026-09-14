@@ -1,34 +1,26 @@
-# Tee
+# Tee2
 
-[![Build Status](https://travis-ci.org/softprops/tee.svg)](https://travis-ci.org/softprops/tee) [![Coverage Status](https://coveralls.io/repos/softprops/tee/badge.svg?branch=master&service=github)](https://coveralls.io/github/softprops/tee?branch=master)
+![Crates.io Version](https://img.shields.io/crates/v/tee2)
+<br>
+![docs.rs](https://img.shields.io/docsrs/tee2)
+![Deps.rs Crate Dependencies (latest)](https://img.shields.io/deps-rs/tee2/latest)
 
-A rustlang adapter for readers which delegate read bytes to a writer, adapted from the standard library's `std::io::Read#tee` which has since been deprecated.
+A rustlang adapter for readers which delegate read bytes to a writer.
 
-## install
-
-Add the following to your `Cargo.toml` file
-
-```toml
-[dependencies]
-tee = "0.1"
-```
-
-## api docs
-
-rustdoc api documentation can be found [here](https://softprops.github.io/tee)
-
-## examples
-
-The currently unstable/deprecated std library function looks like this
+## Examples
 
 ```rust
-let tee_reader = reader.tee(writer);
+# use std::io::{Read, Write};
+# use tee2::TeeReader;
+#
+let mut reader = "Hello, World!".as_bytes();
+let mut writer = Vec::new();
+let mut stdout = Vec::new();
+
+let mut tee = TeeReader::new(&mut reader, &mut writer);
+tee.read_to_end(&mut stdout).unwrap();
+assert_eq!(writer, stdout);
 ```
 
-With `tee`, this looks more like
-
-```rust
-let tee_reader = tee::TeeReader::new(reader, writer);
-```
-
-Doug Tangren (softprops) 2015
+Doug Tangren (softprops) 2015<br>
+r41ngee 2026
