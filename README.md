@@ -24,3 +24,5 @@ assert_eq!(writer, stdout);
 
 Doug Tangren (softprops) 2015<br>
 r41ngee 2026
+
+Forked from [https://github.com/softprops/tee]
