@@ -11,6 +11,21 @@
 //! tee.read_to_end(&mut stdout).unwrap();
 //! assert_eq!(writer, stdout);
 //! ```
+//! 
+//! ```
+//! # use std::io::{Read, Write};
+//! # use tee2::MultiTee;
+//! #
+//! let mut reader = "Hello, World!".as_bytes();
+//! let mut writer = Vec::new();
+//! let mut writer2 = Vec::new();
+//! let mut stdout = Vec::new();
+//! 
+//! let mut tee = MultiTee::new(&mut reader, vec![&mut writer, &mut writer2]);
+//! tee.read_to_end(&mut stdout).unwrap();
+//! assert_eq!(writer, stdout);
+//! assert_eq!(writer2, stdout);
+//! ```
 
 use std::io::{Read, Result, Write};
 
