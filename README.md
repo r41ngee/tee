@@ -10,9 +10,9 @@ A rustlang adapter for readers which delegate read bytes to a writer.
 ## Examples
 
 ```rust
-# use std::io::{Read, Write};
-# use tee2::TeeReader;
-#
+use std::io::{Read, Write};
+use tee2::TeeReader;
+
 let mut reader = "Hello, World!".as_bytes();
 let mut writer = Vec::new();
 let mut stdout = Vec::new();
