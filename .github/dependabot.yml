@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Moscow"
+    
+    groups:
+      safe-updates:
+        applies-to: "version-updates"
+        update-types:
+          - "patch"
+          - "minor"
+
+      major-updates:
+        applies-to: "version-updates"
+        update-types:
+          - "major"
+
+    labels:
+      - "dependencies"
+    reviewers:
+      - "r41ngee"
