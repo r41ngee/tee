@@ -37,9 +37,13 @@ pub struct TeeReader<'a, R: Read, W: Write> {
 }
 
 impl<'a, R: Read, W: Write> TeeReader<'a, R, W> {
-    /// Returns a TeeReader which can be used as Read whose
-    /// reads delegate bytes read to the provided reader and write to the provided
+    /// Returns a `TeeReader` which can be used as `Read` whose
+    /// reads delegate bytes read from the provided reader and write to the provided
     /// writer. The write operation must complete before the read completes.
+    ///
+    /// This adapter is intentionally thin: buffering should usually be configured
+    /// outside the tee, e.g. by wrapping the reader in `BufReader` and/or the writer
+    /// in `BufWriter`.
     ///
     /// Errors reported by the write operation will be interpreted as errors for the read
     pub fn new(reader: &'a mut R, writer: &'a mut W) -> TeeReader<'a, R, W> {
@@ -112,5 +116,21 @@ mod tests {
         }
         assert_eq!(teeout1, teeout2);
         assert_eq!(teeout2, stdout);
+    }
+
+    #[test]
+    fn tee_with_bufreader_and_bufwriter() {
+        let mut reader = std::io::BufReader::new("It's over 9000!".as_bytes());
+        let mut teeout = std::io::BufWriter::new(Vec::new());
+        let mut stdout = Vec::new();
+
+        {
+            let mut tee = TeeReader::new(&mut reader, &mut teeout);
+            tee.read_to_end(&mut stdout).unwrap();
+        }
+
+        teeout.flush().unwrap();
+        let bytes = teeout.into_inner().unwrap();
+        assert_eq!(bytes, stdout);
     }
 }
