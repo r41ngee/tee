@@ -26,6 +26,25 @@
 //! assert_eq!(writer, stdout);
 //! assert_eq!(writer2, stdout);
 //! ```
+//!
+//! The write side is covered by [`MultiWriter`], which forwards everything
+//! written to it to each of its registered writers
+//!
+//! ```rust
+//! # use std::io::Write;
+//! # use tee2::MultiWriter;
+//! #
+//! let mut first = Vec::new();
+//! let mut second = Vec::new();
+//!
+//! let mut writer = MultiWriter::default();
+//! writer.add_writer(&mut first);
+//! writer.add_writer(&mut second);
+//! writer.write_all(b"Hello, World!").unwrap();
+//!
+//! assert_eq!(first, second);
+//! assert_eq!(&first[..], b"Hello, World!");
+//! ```
 
 mod multi_writer;
 pub use multi_writer::MultiWriter;
