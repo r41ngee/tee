@@ -27,6 +27,9 @@
 //! assert_eq!(writer2, stdout);
 //! ```
 
+mod multi_writer;
+pub use multi_writer::MultiWriter;
+
 use std::io::{Read, Result, Write};
 
 /// An adapter for readers whose inputs
