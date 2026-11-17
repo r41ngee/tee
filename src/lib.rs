@@ -1,6 +1,7 @@
 use std::io::{Read, Write};
 
-pub mod multi_writer;
+pub mod dynamic;
+pub use dynamic::*;
 
 pub struct Writer<W: Write>(Vec<W>);
 impl<W: Write> Writer<W> {
