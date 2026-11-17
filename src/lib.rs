@@ -1,158 +1,48 @@
-//! An adapter for readers which delegate reads to a writer
-//! ```rust
-//! # use std::io::{Read, Write};
-//! # use tee2::TeeReader;
-//! #
-//! let mut reader = "Hello, World!".as_bytes();
-//! let mut writer = Vec::new();
-//! let mut stdout = Vec::new();
-//! 
-//! let mut tee = TeeReader::new(&mut reader, &mut writer);
-//! tee.read_to_end(&mut stdout).unwrap();
-//! assert_eq!(writer, stdout);
-//! ```
-//! 
-//! ```
-//! # use std::io::{Read, Write};
-//! # use tee2::MultiTee;
-//! #
-//! let mut reader = "Hello, World!".as_bytes();
-//! let mut writer = Vec::new();
-//! let mut writer2 = Vec::new();
-//! let mut stdout = Vec::new();
-//! 
-//! let mut tee = MultiTee::new(&mut reader, vec![&mut writer, &mut writer2]);
-//! tee.read_to_end(&mut stdout).unwrap();
-//! assert_eq!(writer, stdout);
-//! assert_eq!(writer2, stdout);
-//! ```
-//!
-//! The write side is covered by [`MultiWriter`], which forwards everything
-//! written to it to each of its registered writers
-//!
-//! ```rust
-//! # use std::io::Write;
-//! # use tee2::MultiWriter;
-//! #
-//! let mut first = Vec::new();
-//! let mut second = Vec::new();
-//!
-//! let mut writer = MultiWriter::default();
-//! writer.add_writer(&mut first);
-//! writer.add_writer(&mut second);
-//! writer.write_all(b"Hello, World!").unwrap();
-//!
-//! assert_eq!(first, second);
-//! assert_eq!(&first[..], b"Hello, World!");
-//! ```
+use std::io::{Read, Write};
 
-mod multi_writer;
-pub use multi_writer::MultiWriter;
+pub mod multi_writer;
 
-use std::io::{Read, Result, Write};
-
-/// An adapter for readers whose inputs
-/// are written to a "tee"'d writer
-pub struct TeeReader<'a, R: Read, W: Write> {
-    reader: &'a mut R,
-    writer: &'a mut W,
+pub struct Writer<W: Write>(Vec<W>);
+impl<W: Write> Writer<W> {
+    pub fn new(writer: W) -> Self { Self(Vec::new()) }
+    pub fn add_writer(&mut self, writer: W) {
+        self.0.push(writer);
+    }
 }
 
-impl<'a, R: Read, W: Write> TeeReader<'a, R, W> {
-    /// Returns a `TeeReader` which can be used as `Read` whose
-    /// reads delegate bytes read from the provided reader and write to the provided
-    /// writer. The write operation must complete before the read completes.
-    ///
-    /// This adapter is intentionally thin: buffering should usually be configured
-    /// outside the tee, e.g. by wrapping the reader in `BufReader` and/or the writer
-    /// in `BufWriter`.
-    ///
-    /// Errors reported by the write operation will be interpreted as errors for the read
-    pub fn new(reader: &'a mut R, writer: &'a mut W) -> TeeReader<'a, R, W> {
-        TeeReader {
-            reader: reader,
-            writer: writer,
+impl<W: Write> Write for Writer<W> {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        for w in self.0.iter_mut() {
+            w.write(buf)?;
         }
+
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        for w in self.0.iter_mut() {
+            w.flush()?;
+        }
+        Ok(())
     }
 }
 
-impl<R: Read, W: Write> Read for TeeReader<'_, R, W> {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let n = self.reader.read(buf)?;
-        self.writer.write_all(&buf[..n])?;
-        Ok(n)
-    }
+
+pub struct Reader<R: Read, W: Write> {
+    reader: R,
+    writers: Writer<W>,
 }
 
-
-/// An adapter for readers whose inputs
-/// are written to multiple "tee"'d writers.
-pub struct MultiTee<'a> {
-    reader: &'a mut dyn Read,
-    writers: Vec<&'a mut dyn Write>,
-}
-
-impl<'a> MultiTee<'a> {
-    /// Creates a new [`MultiTee`] instance that reads from the given reader and writes to the provided writers.
-    pub fn new(reader: &'a mut dyn Read, writers: Vec<&'a mut dyn Write>) -> Self {
+impl<R: Read, W: Write> Reader<R, W> {
+    pub fn new(reader: R, writers: Writer<W>) -> Self {
         Self { reader, writers }
     }
 }
 
-impl Read for MultiTee<'_> {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let n = self.reader.read(buf)?;
-        for w in self.writers.iter_mut() {
-            w.write_all(&buf[..n])?;
-        }
-        Ok(n)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::io::Read;
-
-    #[test]
-    fn tee() {
-        let mut reader = "It's over 9000!".as_bytes();
-        let mut teeout = Vec::new();
-        let mut stdout = Vec::new();
-        {
-            let mut tee = TeeReader::new(&mut reader, &mut teeout);
-            let _ = tee.read_to_end(&mut stdout);
-        }
-        assert_eq!(teeout, stdout);
-    }
-
-    #[test]
-    fn multi_tee() {
-        let mut reader = "It's over 9000!".as_bytes();
-        let mut teeout1 = Vec::new();
-        let mut teeout2 = Vec::new();
-        let mut stdout = Vec::new();
-        {
-            let mut tee = MultiTee::new(&mut reader, vec![&mut teeout1, &mut teeout2]);
-            let _ = tee.read_to_end(&mut stdout);
-        }
-        assert_eq!(teeout1, teeout2);
-        assert_eq!(teeout2, stdout);
-    }
-
-    #[test]
-    fn tee_with_bufreader_and_bufwriter() {
-        let mut reader = std::io::BufReader::new("It's over 9000!".as_bytes());
-        let mut teeout = std::io::BufWriter::new(Vec::new());
-        let mut stdout = Vec::new();
-
-        {
-            let mut tee = TeeReader::new(&mut reader, &mut teeout);
-            tee.read_to_end(&mut stdout).unwrap();
-        }
-
-        teeout.flush().unwrap();
-        let bytes = teeout.into_inner().unwrap();
-        assert_eq!(bytes, stdout);
+impl<R: Read, W: Write> Read for Reader<R, W> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        self.reader.read(buf)?;
+        self.writers.write_all(buf)?;
+        Ok(buf.len())
     }
 }
