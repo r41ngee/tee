@@ -8,6 +8,7 @@ impl<W: Write> Writer<W> {
     pub fn add_writer(&mut self, writer: W) {
         self.0.push(writer);
     }
+    pub fn take(self) -> Vec<W> { self.0 }
 }
 
 impl<W: Write> Write for Writer<W> {
