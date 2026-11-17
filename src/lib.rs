@@ -42,6 +42,9 @@ impl<R: Read, W: Write> Reader<R, W> {
     pub fn new(reader: R, writers: Writer<W>) -> Self {
         Self { reader, writers }
     }
+    pub fn take(self) -> (R, Writer<W>) {
+        (self.reader, self.writers)
+    }
 }
 
 impl<R: Read, W: Write> Read for Reader<R, W> {
