@@ -8,6 +8,6 @@ edition = "2018"
 authors = ["softprops <d.tangren@gmail.com>", "r41ngee <r41ngeee@gmail.com>"]
 description = "An adapter for readers which delegate reads to a writer"
 repository = "https://github.com/r41ngee/tee"
-keywords = ["io"]
+keywords = ["io", "tee", "reader", "writer", "adapter"]
 readme = "README.md"
 license = "MIT"
