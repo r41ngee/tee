@@ -79,7 +79,6 @@ type BoxW = Box<dyn Write + 'static>;
 /// `Box<dyn Write>` (owning) or `&mut dyn Write` (borrowing).
 ///
 /// See the [module documentation](self) for examples and error semantics.
-#[derive(Default)]
 pub struct DynWriter<B>
 where
     B: DerefMut<Target = dyn Write>
@@ -107,6 +106,10 @@ where
         self.inner
     }
 }
+
+impl<B: DerefMut<Target = dyn Write>> Default for DynWriter<B> {
+    fn default() -> Self { Self { inner: Vec::new() } }
+} 
 
 impl DynWriter<BoxW> {
     /// Boxes each writer and creates a set from them.
