@@ -1,6 +1,6 @@
 [package]
 name = "tee2"
-version = "0.2.2"
+version = "1.0.0"
 
 rust-version = "1.31.1"
 edition = "2018"
