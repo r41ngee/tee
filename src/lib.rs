@@ -4,7 +4,7 @@ pub mod multi_writer;
 
 pub struct Writer<W: Write>(Vec<W>);
 impl<W: Write> Writer<W> {
-    pub fn new(writer: W) -> Self { Self(Vec::new()) }
+    pub fn new() -> Self { Self(Vec::new()) }
     pub fn add_writer(&mut self, writer: W) {
         self.0.push(writer);
     }
@@ -25,6 +25,10 @@ impl<W: Write> Write for Writer<W> {
         }
         Ok(())
     }
+}
+
+impl<W: Write> Default for Writer<W> {
+    fn default() -> Self { Self::new() }
 }
 
 
