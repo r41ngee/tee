@@ -48,7 +48,7 @@ where
 {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         for w in self.inner.iter_mut() {
-            w.write(buf)?;
+            w.write_all(buf)?;
         }
         Ok(buf.len())
     }
