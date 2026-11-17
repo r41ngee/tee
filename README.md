@@ -161,7 +161,7 @@ you want a [`Reader`] to fan out to sinks of different types.
 
 ## MSRV
 
-Rust 1.31.1 (edition 2018).
+Rust 1.32.0 (edition 2018).
 
 ## License
 
