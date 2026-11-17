@@ -21,6 +21,9 @@ where
     pub fn add_writer(&mut self, writer: B) {
         self.inner.push(writer);
     }
+    pub fn take(self) -> Vec<B> {
+        self.inner
+    }
 }
 
 impl DynWriter<BoxW> {
